@@ -16,6 +16,7 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // Add services to the container.
+builder.Services.AddSingleton<ChessSchoolAPI.Services.UserService>();
 builder.Services.Configure<ChessSchoolAPI.Services.ChessStudentService>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<ChessSchoolAPI.Services.ChessStudentService>();
 
@@ -76,6 +77,33 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Введите 'Bearer' [пробел] и ваш токен в поле ниже.\n\nПример: 'Bearer eyJhbGciOiJIUzI1NiIsIn...'"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 builder.Logging.AddConsole();
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
@@ -91,6 +119,8 @@ var loggerFactory = LoggerFactory.Create(builder =>
 {
     builder.AddConsole(); // Логирование в консоль
 });
+
+
 
 //var logger = loggerFactory.CreateLogger<Program>();
 
@@ -137,6 +167,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 
 app.UseDeveloperExceptionPage();
 app.UseRouting();

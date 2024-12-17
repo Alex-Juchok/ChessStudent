@@ -83,7 +83,7 @@ namespace ChessSchoolAPI.Services
 
             // Кешируем студента как хэш в Redis
             string cacheKey = $"ChessStudent_{newStudent.Id}";
-            
+
             var db = _redisConnection.GetDatabase();
 
             // Используем Redis Hashes для хранения данных студента
@@ -111,8 +111,27 @@ namespace ChessSchoolAPI.Services
                 .Set(s => s.Rating, updatedStudent.Rating)
                 .Set(s => s.EnrollmentDate, updatedStudent.EnrollmentDate);
 
-            _cache.Remove($"ChessStudent_{id}");
+            // Обновляем запись в MongoDB
             _students.UpdateOne(filter, update);
+
+            // Обновляем хеш в Redis
+            var cacheKey = $"ChessStudent_{id}";
+            var db = _redisConnection.GetDatabase();
+
+            // Проверяем каждое значение на null
+            var redisHash = new HashEntry[]
+            {
+                new HashEntry("Id", updatedStudent.Id ?? ""),
+                new HashEntry("Name", updatedStudent.Name ?? ""),
+                new HashEntry("Rating", updatedStudent.Rating != null ? updatedStudent.Rating.ToString() : "0"),
+                new HashEntry("EnrollmentDate", updatedStudent.EnrollmentDate != null
+                    ? updatedStudent.EnrollmentDate.ToString("o")
+                    : "") // ISO 8601 или пустая строка
+            };
+
+            // Удаляем старый хеш и добавляем обновленный
+            db.KeyDelete(cacheKey);
+            db.HashSet(cacheKey, redisHash);
         }
 
         public void Delete(string id)
@@ -124,7 +143,20 @@ namespace ChessSchoolAPI.Services
         public void DeleteAll()
         {
             _students.DeleteMany(_ => true);
-            _cache.Remove("ChessStudents");
+
+            // Удаляем все ключи из Redis
+            var endpoints = _redisConnection.GetEndPoints();
+            foreach (var endpoint in endpoints)
+            {
+                var server = _redisConnection.GetServer(endpoint);
+                var keys = server.Keys();
+                var db = _redisConnection.GetDatabase();
+
+                foreach (var key in keys)
+                {
+                    db.KeyDelete(key);
+                }
+            }
         }
     }
 }

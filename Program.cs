@@ -3,6 +3,9 @@ using StackExchange.Redis;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +19,29 @@ builder.Configuration
 builder.Services.Configure<ChessSchoolAPI.Services.ChessStudentService>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<ChessSchoolAPI.Services.ChessStudentService>();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+    };
+});
+
+
+
+// Добавьте авторизацию
+builder.Services.AddAuthorization();
 
 // Other configurations...
 // Log Redis-related information
@@ -52,11 +78,13 @@ builder.Services.AddCors(options =>
 
 
 builder.Logging.AddConsole();
-builder.Logging.AddConsole(); // Логирование в консоль
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Приложение запускается...");
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Настройка логирования Redis
 var loggerFactory = LoggerFactory.Create(builder =>

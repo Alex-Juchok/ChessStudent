@@ -50,3 +50,13 @@ C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.DotNet.PlatformAbstract
 C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.Extensions.DependencyModel.dll
 C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
 C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\System.Security.Permissions.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.Bcl.TimeProvider.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\juker\ChessSchoolAPI\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll

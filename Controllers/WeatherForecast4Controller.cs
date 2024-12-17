@@ -1,11 +1,13 @@
 using ChessSchoolAPI.Models;
 using ChessSchoolAPI.Services;
-using Microsoft.AspNetCore.Mvc;  // Добавляем эту директиву
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ChessSchoolAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ChessStudentsController : ControllerBase
@@ -45,7 +47,7 @@ namespace ChessSchoolAPI.Controllers
         public ActionResult<ChessStudent> Create(ChessStudent newStudent)
         {
             _studentService.Create(newStudent);
-            
+
             // Возвращаем только созданный объект без указания маршрута
             return Created("", newStudent);
         }

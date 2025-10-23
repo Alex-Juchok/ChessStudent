@@ -76,9 +76,9 @@ namespace ChessSchoolAPI.Services
             return student;
         }
 
-        public async Task<ChessStudent> Create(ChessStudent newStudent)
+        public async Task<ChessStudent> Create(ChessStudent newStudent, string userId)
         {
-            // Вставляем нового студента в базу данных
+            newStudent.User_id = userId;
             _students.InsertOne(newStudent);
 
             // Кешируем студента как хэш в Redis
@@ -92,7 +92,8 @@ namespace ChessSchoolAPI.Services
                 new HashEntry("Id", newStudent.Id),
                 new HashEntry("Name", newStudent.Name),
                 new HashEntry("Rating", newStudent.Rating),
-                new HashEntry("EnrollmentDate", newStudent.EnrollmentDate.ToString("o"))  // Преобразуем в строку ISO 8601
+                new HashEntry("EnrollmentDate", newStudent.EnrollmentDate.ToString("o")),  // Преобразуем в строку ISO 8601
+                new HashEntry("User_id", newStudent.User_id) 
             };
 
             await db.HashSetAsync(cacheKey, redisHash);
@@ -126,7 +127,7 @@ namespace ChessSchoolAPI.Services
                 new HashEntry("Rating", updatedStudent.Rating != null ? updatedStudent.Rating.ToString() : "0"),
                 new HashEntry("EnrollmentDate", updatedStudent.EnrollmentDate != null
                     ? updatedStudent.EnrollmentDate.ToString("o")
-                    : "") // ISO 8601 или пустая строка
+                    : ""),
             };
 
             // Удаляем старый хеш и добавляем обновленный
@@ -157,6 +158,14 @@ namespace ChessSchoolAPI.Services
                     db.KeyDelete(key);
                 }
             }
+        }
+
+        public void ConfirmObject(string studentId, string confirmationTime)
+        {
+            Console.WriteLine(confirmationTime);
+            var filter = Builders<ChessStudent>.Filter.Eq(student => student.Id, studentId);
+            var update = Builders<ChessStudent>.Update.Set(student => student.ConfirmationTime, confirmationTime);
+            _students.UpdateOne(filter, update);
         }
     }
 }

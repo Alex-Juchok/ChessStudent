@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\juker\\ChessSchoolAPI\\ChessSchoolAPI.csproj": {}
+    "C:\\Users\\juker\\chessSchoolService\\ChessSchoolAPI\\ChessSchoolAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\juker\\ChessSchoolAPI\\ChessSchoolAPI.csproj": {
+    "C:\\Users\\juker\\chessSchoolService\\ChessSchoolAPI\\ChessSchoolAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\juker\\ChessSchoolAPI\\ChessSchoolAPI.csproj",
+        "projectUniqueName": "C:\\Users\\juker\\chessSchoolService\\ChessSchoolAPI\\ChessSchoolAPI.csproj",
         "projectName": "ChessSchoolAPI",
-        "projectPath": "C:\\Users\\juker\\ChessSchoolAPI\\ChessSchoolAPI.csproj",
+        "projectPath": "C:\\Users\\juker\\chessSchoolService\\ChessSchoolAPI\\ChessSchoolAPI.csproj",
         "packagesPath": "C:\\Users\\juker\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\juker\\ChessSchoolAPI\\obj\\",
+        "outputPath": "C:\\Users\\juker\\chessSchoolService\\ChessSchoolAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\juker\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,6 +40,10 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Confluent.Kafka": {
+              "target": "Package",
+              "version": "[2.12.0, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[6.0.1, )"

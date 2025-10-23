@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ChessSchoolAPI.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,9 +17,13 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // Add services to the container.
-builder.Services.AddSingleton<ChessSchoolAPI.Services.UserService>();
+//builder.Services.AddSingleton<ChessSchoolAPI.Services.UserService>();
 builder.Services.Configure<ChessSchoolAPI.Services.ChessStudentService>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<ChessSchoolAPI.Services.ChessStudentService>();
+builder.Services.AddSingleton<ChessSchoolAPI.Services.KafkaProducerService>();
+builder.Services.AddSingleton<KafkaConsumerService>();
+builder.Services.AddHostedService<KafkaConsumerHostedService>();
+
 
 builder.Services.AddAuthentication(options =>
 {

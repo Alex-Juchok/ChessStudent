@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+
+*.log
+.DS_Store
+.env
+.env.*       # например .env.local
+.idea/
+.vscode/

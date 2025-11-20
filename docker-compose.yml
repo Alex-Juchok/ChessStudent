@@ -1,0 +1,160 @@
+services:
+  # --- MongoDB ---
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - chessnet
+
+  # --- Redis ---
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - chessnet
+
+  # --- Kafka (KRaft mode, без Zookeeper) ---
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1 # стабильная версия с поддержкой KRaft
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092" # для приложений
+    environment:
+      # Включаем режим KRaft (без ZooKeeper)
+      KAFKA_KRAFT_MODE: "true"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+
+      # Контроллерный кластер (один узел)
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
+
+      # Протоколы для слушателей
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092"
+
+      CLUSTER_ID: "_Ki1e8LTTVqvTvG4xdQM8Q"
+
+      # Хранилище данных
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+    networks:
+      - chessnet
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  # --- ChessStudentAPI ---
+  chessstudentapi:
+    build: ./ChessSchoolAPI
+    container_name: chessschoolapi
+    depends_on:
+      - kafka
+      - mongodb
+      - redis
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Redis__ConnectionString=redis:6379
+    ports:
+      - "5000:8080"
+    networks:
+      - chessnet
+
+  # --- UserService ---
+  userservice:
+    build: ./UserService
+    container_name: userservice
+    depends_on:
+      - kafka
+      - mongodb
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+    ports:
+      - "5001:8080"
+    networks:
+      - chessnet
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - chessstudentapi
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - chessnet
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - chessnet
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - "--kafka.server=kafka:9092"
+    ports:
+      - "9308:9308"
+    depends_on:
+      - kafka
+    networks:
+      - chessnet
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.39
+    container_name: mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://metrics:metrics123@mongodb:27017/admin
+    ports:
+      - "9216:9216"
+    depends_on:
+      - mongodb
+    networks:
+      - chessnet
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis-exporter
+    environment:
+      - REDIS_ADDR=redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - chessnet
+
+networks:
+  chessnet:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  kafka_data:

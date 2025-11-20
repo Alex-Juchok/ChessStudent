@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Security.Claims;
-
+using Prometheus;
 
 namespace ChessSchoolAPI.Controllers
 {
@@ -16,6 +16,10 @@ namespace ChessSchoolAPI.Controllers
     {
         private readonly ChessStudentService _studentService;
         private readonly Random _random = new Random();
+        public static class AppMetrics {
+        public static readonly Counter StudentsCreatedCounter =
+                Metrics.CreateCounter("chessstudent_created_total", "Количество созданных учеников");
+        }
 
         public ChessStudentsController(ChessStudentService studentService)
         {
@@ -62,6 +66,8 @@ namespace ChessSchoolAPI.Controllers
                 studentId = created.Id,
                 userId = userId 
             };
+
+            AppMetrics.StudentsCreatedCounter.Inc();
 
             await producer.SendMessageAsync("student.added", message);
 

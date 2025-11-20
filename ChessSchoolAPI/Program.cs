@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ChessSchoolAPI.Services;
+using Prometheus;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -116,8 +117,6 @@ logger.LogInformation("Приложение запускается...");
 
 var app = builder.Build();
 
-app.UseAuthentication();
-app.UseAuthorization();
 
 // Настройка логирования Redis
 var loggerFactory = LoggerFactory.Create(builder =>
@@ -164,7 +163,6 @@ if (app.Environment.IsDevelopment())
 }
 
 // Добавьте использование CORS перед другими Middlewares
-app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -175,12 +173,18 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseDeveloperExceptionPage();
-app.UseRouting();
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 
+
+app.UseRouting();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
+
+app.UseHttpMetrics(); // собирает метрики по HTTP-запросам
+app.MapMetrics("/metrics");     // создает endpoint /metrics
 
 app.Run();
